@@ -1,6 +1,10 @@
 // Robot Ralass : envoie les notifs en attente + relances "mauvais payeur"
 import admin from 'firebase-admin';
-admin.initializeApp({ credential: admin.credential.applicationDefault(), projectId: 'ralass' });
+import { GoogleAuth } from 'google-auth-library';
+// Connexion sans clé : identifiants temporaires fournis par GitHub (Workload Identity)
+const ga = new GoogleAuth({ scopes: ['https://www.googleapis.com/auth/cloud-platform'] });
+const credential = { getAccessToken: async () => { const t = await (await ga.getClient()).getAccessToken(); return { access_token: t.token, expires_in: 3000 }; } };
+admin.initializeApp({ credential, projectId: 'ralass' });
 const db = admin.firestore();
 const APP_URL = process.env.APP_URL || '';
 const now = Date.now();
