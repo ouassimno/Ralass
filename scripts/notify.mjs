@@ -1,6 +1,6 @@
 // Robot Ralass : envoie les notifs en attente + relances "mauvais payeur"
 import admin from 'firebase-admin';
-admin.initializeApp({ credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)) });
+admin.initializeApp({ credential: admin.credential.applicationDefault(), projectId: 'ralass' });
 const db = admin.firestore();
 const APP_URL = process.env.APP_URL || '';
 const now = Date.now();
