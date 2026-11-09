@@ -65,7 +65,7 @@ button:disabled{opacity:.4}
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, query, where, getDocs, onSnapshot, runTransaction, arrayUnion, deleteField } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, deleteDoc, collection, query, where, getDocs, onSnapshot, runTransaction, arrayUnion, deleteField } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { getMessaging, getToken, onMessage, isSupported } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js';
 
 const DEFAULT_MESSAGES = [
@@ -313,7 +313,7 @@ function expenseCard(e){
     }).join('');
   }
   return `<div class="card">
-    <div class="row"><img class="av" src="${photo(e.payer)}"><div class="grow"><b>${esc(e.title)}</b><div class="mut">${esc(name(e.payer))} a payé · ${new Date(e.date).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}</div></div><div class="big">${eur(e.amount)}</div></div>
+    <div class="row"><img class="av" src="${photo(e.payer)}"><div class="grow"><b>${esc(e.title)}</b><div class="mut">${esc(name(e.payer))} a payé · ${new Date(e.date).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}</div></div><div class="big">${eur(e.amount)}</div></div>${e.payer===S.uid?`<div style="text-align:right;margin-top:6px"><button class="sm sec" data-act="delexp" data-id="${e.id}">🗑️ Supprimer</button></div>`:''}
     <div style="margin-top:8px">${pill}</div>${body}${btns}</div>`;
 }
 
@@ -372,6 +372,7 @@ function act(d){
   if (d.act==='val') validate(e, !!d.ok);
   if (d.act==='share') setShare(e, d.u, d.s);
   if (d.act==='notif') enableNotifs();
+  if (d.act==='delexp' && e && e.payer===S.uid && confirm(`Supprimer « ${e.title} » (${eur(e.amount)}) ? C'est définitif.`)) deleteDoc(doc(db,'expenses',e.id)).then(()=>toast('Dépense supprimée'));
   if (d.act==='delmsg' && S.group.createdBy===S.uid) { const m=[...S.group.messages]; m.splice(+d.i,1); updateDoc(doc(db,'groups',S.gid), { messages:m }); }
 }
 
