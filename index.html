@@ -153,7 +153,7 @@ function openGroup(gid){
   S.unsub.push(onSnapshot(doc(db,'groups',gid), s => { S.group = {id:s.id,...s.data()}; watchUsers(S.group.members||[]); render(); }));
   S.unsub.push(onSnapshot(query(collection(db,'expenses'), where('groupId','==',gid)), qs => {
     S.expenses = qs.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.createdAt-a.createdAt); render();
-    S.expenses.filter(e=>e.status==='pending' && e.payer===S.uid).forEach(activateLegacy);
+    S.expenses.filter(e=>e.status==='pending').forEach(activateLegacy);
   }));
 }
 function watchUsers(uids){
@@ -300,7 +300,7 @@ function expenseCard(e){
     const v=e.validations||{}; const waiting=Object.keys(v).filter(u=>v[u]==='wait');
     pill = `<span class="pill wait">En attente de validation</span>`;
     body = `<div class="mut" style="margin-top:8px">${Object.keys(v).map(u=>`${esc(name(u))} ${v[u]==='ok'?'✅':v[u]==='no'?'🚫':'⏳'}`).join(' · ')}</div>`;
-    if (v[S.uid]==='wait') btns = `<div class="mut" style="margin-top:10px">${esc(name(e.payer))} dit avoir payé ${eur(e.amount)}. T'étais là ?</div>
+    if (false) btns = `<div class="mut" style="margin-top:10px">${esc(name(e.payer))} dit avoir payé ${eur(e.amount)}. T'étais là ?</div>
       <div class="btns"><button class="green" data-act="val" data-id="${e.id}" data-ok="1">Valider</button><button class="sec" data-act="val" data-id="${e.id}" data-ok="">Pas moi</button></div>`;
   } else {
     pill = e.status==='closed' ? `<span class="pill ok">Tout remboursé</span>` : `<span class="pill">${eur(e.perPerson)} / pers.</span>`;
