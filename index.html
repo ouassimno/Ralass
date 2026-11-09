@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Ralass</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ralass">
+<meta name="theme-color" content="#0b0b0f">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script src="config.js"></script>
+<style>
+:root{--bg:#0b0b0f;--card:#16161d;--card2:#1f1f29;--txt:#f4f4f7;--mut:#8b8b99;--acc:#ffd23f;--red:#ff3b47;--green:#2ee59d;--r:18px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif}
+body{padding:calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 90px);min-height:100vh}
+h1{font-size:34px;font-weight:900;letter-spacing:-1px;margin:6px 0 14px}
+h2{font-size:20px;font-weight:800;margin:22px 0 10px}
+.logo{color:var(--acc)}
+.card{background:var(--card);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.row{display:flex;align-items:center;gap:12px}
+.grow{flex:1;min-width:0}
+.mut{color:var(--mut);font-size:14px}
+.big{font-size:22px;font-weight:800}
+input,select{width:100%;background:var(--card2);border:1px solid #2c2c38;color:var(--txt);border-radius:14px;padding:14px;font-size:17px;margin:6px 0 12px;outline:none}
+input:focus{border-color:var(--acc)}
+button{border:0;border-radius:14px;padding:14px 18px;font-size:17px;font-weight:700;background:var(--acc);color:#111;cursor:pointer;width:100%}
+button.sec{background:var(--card2);color:var(--txt)}
+button.red{background:var(--red);color:#fff}
+button.green{background:var(--green);color:#111}
+button.sm{width:auto;padding:9px 14px;font-size:15px;border-radius:12px}
+button:disabled{opacity:.4}
+.btns{display:flex;gap:8px;margin-top:10px}
+.btns button{flex:1}
+.av{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--card2);flex-shrink:0}
+.av.xl{width:120px;height:120px;border:4px solid var(--red)}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:4px 9px;border-radius:99px;background:var(--card2);color:var(--mut)}
+.pill.ok{background:#12352a;color:var(--green)}.pill.wait{background:#3a3110;color:var(--acc)}.pill.bad{background:#3d1316;color:var(--red)}
+.tabs{position:fixed;left:0;right:0;bottom:0;background:rgba(11,11,15,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid #222;display:flex;padding:8px 8px calc(env(safe-area-inset-bottom) + 8px);z-index:5}
+.tabs button{background:none;color:var(--mut);font-size:12px;padding:6px;font-weight:600}
+.tabs button b{display:block;font-size:22px}
+.tabs button.on{color:var(--acc)}
+.shame{background:linear-gradient(160deg,#3d0a10,#16161d);border:2px solid var(--red);text-align:center;padding:20px 16px;animation:pulse 1.6s infinite}
+@keyframes pulse{50%{border-color:#ff8a92}}
+.shame .t{font-size:26px;font-weight:900;color:var(--red);letter-spacing:-.5px;margin:10px 0 4px;text-transform:uppercase}
+.shame .m{font-size:18px;font-weight:800;margin:10px 0}
+.chk{display:flex;align-items:center;gap:12px;padding:10px;border-radius:14px;background:var(--card2);margin-bottom:8px}
+.chk input{width:22px;height:22px;margin:0;accent-color:var(--acc)}
+.fab{position:fixed;right:18px;bottom:calc(env(safe-area-inset-bottom) + 84px);width:60px;height:60px;border-radius:50%;font-size:32px;padding:0;box-shadow:0 8px 30px rgba(255,210,63,.35);z-index:6}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:10;display:flex;align-items:flex-end}
+.sheet{background:var(--bg);width:100%;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:20px 16px calc(env(safe-area-inset-bottom) + 20px)}
+.toast{position:fixed;left:16px;right:16px;top:calc(env(safe-area-inset-top) + 10px);background:var(--acc);color:#111;padding:14px;border-radius:14px;font-weight:700;z-index:20;text-align:center}
+.avpick{display:block;margin:0 auto 14px;width:110px;height:110px;border-radius:50%;background:var(--card2) center/cover;border:3px dashed #333;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:13px;text-align:center}
+.code{font-size:30px;font-weight:900;letter-spacing:6px;color:var(--acc)}
+.del{background:none;color:var(--red);width:auto;padding:4px 8px;font-size:20px}
+.hint{background:#1c1a10;border:1px solid #4a3f12;color:#f3dc8a;border-radius:14px;padding:12px;font-size:14px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div id="app"><p class="mut" style="text-align:center;margin-top:40vh">Chargement…</p></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, query, where, getDocs, onSnapshot, runTransaction, arrayUnion, deleteField } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getMessaging, getToken, onMessage, isSupported } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js';
+
+const DEFAULT_MESSAGES = [
+  "RALASS T'ES FRÈRE 😤",
+  "MAUVAIS PAYEUR 🚨",
+  "Le genre de personne qui part en vacances avec l'argent des gens ✈️",
+  "Dépenser pour des tchay t'as de l'argent enculé 💅",
+  "Wsh t'as pas reçu la CAF ? 🤡"
+];
+const DELAYS = [[1,'1 minute (test)'],[1440,'1 jour'],[2880,'2 jours'],[4320,'3 jours'],[7200,'5 jours'],[10080,'7 jours']];
+
+const app = initializeApp(window.FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const S = { uid:null, me:null, groups:[], gid:null, group:null, users:{}, expenses:[], tab:'home', unsub:[], userUnsubs:{} };
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const eur = n => (Math.round(n*100)/100).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+const name = uid => S.users[uid]?.name || '…';
+const photo = uid => S.users[uid]?.photo || 'icon-192.png';
+const isStandalone = () => window.navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+function toast(t){ const d=document.createElement('div'); d.className='toast'; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),3200); }
+const randomMsg = () => { const m = S.group?.messages?.length ? S.group.messages : DEFAULT_MESSAGES; return m[Math.floor(Math.random()*m.length)]; };
+const queue = (to, title, body) => { to = to.filter(u => u && u !== S.uid); if (to.length) addDoc(collection(db,'queue'), { to, title, body, createdAt: Date.now(), sent:false }); };
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('firebase-messaging-sw.js').catch(()=>{});
+
+// ---------- AUTH ----------
+onAuthStateChanged(auth, async user => {
+  if (!user) { await signInAnonymously(auth).catch(e => { $('#app').innerHTML = `<p class="mut">Erreur de connexion : ${esc(e.message)}</p>`; }); return; }
+  S.uid = user.uid;
+  onSnapshot(doc(db,'users',S.uid), snap => {
+    S.me = snap.exists() ? snap.data() : null;
+    if (S.me) S.users[S.uid] = S.me;
+    if (!S.me) return renderOnboarding();
+    loadGroups();
+  });
+  setupForeground();
+});
+
+function resizePhoto(file){
+  return new Promise((res,rej) => {
+    const img = new Image();
+    img.onload = () => { const s=256, c=document.createElement('canvas'); c.width=c.height=s; const m=Math.min(img.width,img.height);
+      c.getContext('2d').drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,s,s); res(c.toDataURL('image/jpeg',0.78)); };
+    img.onerror = rej; img.src = URL.createObjectURL(file);
+  });
+}
+
+function renderOnboarding(){
+  let pic = null;
+  $('#app').innerHTML = `
+    <h1><span class="logo">Ralass</span> 💸</h1>
+    <p class="mut">Qui doit quoi à qui. Et ceux qui paient pas, tout le monde le saura.</p>
+    <div class="card">
+      <label class="avpick" id="pk">Ajoute ta photo<input type="file" accept="image/*" id="pf" hidden></label>
+      <input id="nm" placeholder="Ton prénom / surnom" maxlength="20">
+      <button id="go">C'est parti</button>
+    </div>`;
+  $('#pf').onchange = async e => { const f=e.target.files[0]; if(!f) return; pic = await resizePhoto(f); $('#pk').style.backgroundImage=`url(${pic})`; $('#pk').firstChild.textContent=''; };
+  $('#go').onclick = async () => {
+    const n = $('#nm').value.trim(); if (!n) return toast('Mets ton prénom'); if (!pic) return toast('Mets ta photo, c\'est le principe 😏');
+    $('#go').disabled = true;
+    await setDoc(doc(db,'users',S.uid), { name:n, photo:pic, groups:[], tokens:[], createdAt:Date.now() });
+  };
+}
+
+// ---------- GROUPS ----------
+let groupsLoadedKey = '';
+function loadGroups(){
+  const ids = S.me.groups || [];
+  const key = ids.join(',');
+  if (key === groupsLoadedKey && S.groups.length === ids.length) { render(); return; }
+  groupsLoadedKey = key;
+  Promise.all(ids.map(id => getDoc(doc(db,'groups',id)))).then(snaps => {
+    S.groups = snaps.filter(s=>s.exists()).map(s=>({id:s.id,...s.data()}));
+    if (!S.gid) { const last = localStorage.getItem('gid'); S.gid = S.groups.find(g=>g.id===last)?.id || S.groups[0]?.id || null; }
+    if (S.gid) openGroup(S.gid); else render();
+  });
+}
+
+function openGroup(gid){
+  S.unsub.forEach(u=>u()); S.unsub=[]; S.gid=gid; localStorage.setItem('gid',gid);
+  S.unsub.push(onSnapshot(doc(db,'groups',gid), s => { S.group = {id:s.id,...s.data()}; watchUsers(S.group.members||[]); render(); }));
+  S.unsub.push(onSnapshot(query(collection(db,'expenses'), where('groupId','==',gid)), qs => {
+    S.expenses = qs.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.createdAt-a.createdAt); render();
+  }));
+}
+function watchUsers(uids){
+  uids.forEach(u => { if (S.userUnsubs[u]) return;
+    S.userUnsubs[u] = onSnapshot(doc(db,'users',u), s => { if (s.exists()) { S.users[u]=s.data(); render(); } }); });
+}
+
+const genCode = () => Array.from({length:6},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
+async function createGroup(n){
+  const ref = await addDoc(collection(db,'groups'), { name:n, code:genCode(), members:[S.uid], createdBy:S.uid, delayMinutes:2880, messages:DEFAULT_MESSAGES, createdAt:Date.now() });
+  S.gid = ref.id; localStorage.setItem('gid',ref.id);
+  await updateDoc(doc(db,'users',S.uid), { groups: arrayUnion(ref.id) });
+}
+async function joinGroup(code){
+  const qs = await getDocs(query(collection(db,'groups'), where('code','==',code.toUpperCase().trim())));
+  if (qs.empty) return toast('Code introuvable');
+  const g = qs.docs[0];
+  await updateDoc(g.ref, { members: arrayUnion(S.uid) });
+  S.gid = g.id; localStorage.setItem('gid',g.id);
+  await updateDoc(doc(db,'users',S.uid), { groups: arrayUnion(g.id) });
+  queue(g.data().members, `👋 ${S.me.name} a rejoint ${g.data().name}`, 'Bienvenue dans le groupe');
+}
+
+// ---------- DEBT LOGIC ----------
+function overdue(){
+  const out=[]; const delay=(S.group?.delayMinutes ?? 2880)*60000; const now=Date.now();
+  for (const e of S.expenses) { if (e.status!=='active') continue;
+    for (const [u,s] of Object.entries(e.shares||{})) if (s.status!=='paid' && now - e.activatedAt > delay) out.push({e,u,s}); }
+  return out;
+}
+function balances(){
+  // net[a][b] = a doit à b
+  const net={};
+  for (const e of S.expenses) { if (e.status!=='active') continue;
+    for (const [u,s] of Object.entries(e.shares||{})) { if (s.status==='paid') continue;
+      const k = u+'>'+e.payer, rk = e.payer+'>'+u;
+      if (net[rk]) { net[rk]-=s.amount; if (net[rk]<0){ net[k]=-net[rk]; delete net[rk]; } } else net[k]=(net[k]||0)+s.amount; } }
+  return Object.entries(net).filter(([,v])=>v>0.004).map(([k,v])=>{const [from,to]=k.split('>'); return {from,to,v};});
+}
+
+async function validate(e, ok){
+  await runTransaction(db, async tx => {
+    const ref = doc(db,'expenses',e.id); const snap = await tx.get(ref); const x = snap.data();
+    if (x.status!=='pending') return;
+    const v = {...x.validations, [S.uid]: ok ? 'ok':'no'};
+    const upd = { [`validations.${S.uid}`]: v[S.uid] };
+    if (Object.values(v).every(s=>s!=='wait')) {
+      const present = Object.keys(v).filter(u=>v[u]==='ok');
+      const part = x.amount / present.length; const shares={};
+      present.filter(u=>u!==x.payer).forEach(u=>shares[u]={amount:part,status:'due'});
+      upd.status = Object.keys(shares).length ? 'active' : 'closed';
+      upd.shares = shares; upd.activatedAt = Date.now(); upd.perPerson = part;
+      tx.update(ref, upd);
+      setTimeout(()=>{ Object.keys(shares).forEach(u => queue([u], `💸 Tu dois ${eur(part)} à ${name(x.payer)}`, `${x.title} — rembourse avant que tout le groupe voie ta tête 👀`)); },0);
+    } else tx.update(ref, upd);
+  });
+}
+async function setShare(e, uid, status){
+  const ref = doc(db,'expenses',e.id); const upd = { [`shares.${uid}.status`]: status, [`shares.${uid}.${status}At`]: Date.now() };
+  if (status==='paid') { const all = Object.entries(e.shares).every(([u,s]) => u===uid || s.status==='paid'); if (all) upd.status='closed'; }
+  await updateDoc(ref, upd);
+  if (status==='declared') queue([e.payer], `💰 ${name(uid)} dit t'avoir remboursé ${eur(e.shares[uid].amount)}`, `${e.title} — confirme si t'as bien reçu`);
+  if (status==='paid') queue([uid], `✅ ${name(e.payer)} a bien reçu ton virement`, `${e.title} — t'es clean`);
+  if (status==='due') queue([uid], `❌ ${name(e.payer)} n'a PAS reçu ton virement`, `${e.title} — ${eur(e.shares[uid].amount)}, vérifie`);
+}
+
+// ---------- NOTIFICATIONS ----------
+async function enableNotifs(){
+  if (!isStandalone()) return toast("Installe d'abord l'appli : Safari → Partager → Sur l'écran d'accueil");
+  if (!(await isSupported())) return toast('Notifications non supportées sur cet appareil');
+  const perm = await Notification.requestPermission();
+  if (perm!=='granted') return toast('Notifications refusées — active-les dans Réglages');
+  try {
+    const reg = await navigator.serviceWorker.register('firebase-messaging-sw.js'); await navigator.serviceWorker.ready;
+    const token = await getToken(getMessaging(app), { vapidKey: window.VAPID_KEY, serviceWorkerRegistration: reg });
+    await updateDoc(doc(db,'users',S.uid), { tokens: arrayUnion(token) });
+    localStorage.setItem('notifs','1'); toast('Notifications activées 🔔'); render();
+  } catch(err){ toast('Erreur notifs : '+err.message); }
+}
+async function setupForeground(){ try { if (await isSupported()) onMessage(getMessaging(app), p => toast((p.notification?.title||'')+' — '+(p.notification?.body||''))); } catch(e){} }
+
+// ---------- RENDER ----------
+function render(){
+  if (!S.me) return;
+  if (!S.groups.length || !S.group) return renderNoGroup();
+  const tabs = {home:renderHome, bal:renderBalances, set:renderSettings}[S.tab]();
+  $('#app').innerHTML = tabs + `
+    <div class="tabs">
+      <button class="${S.tab==='home'?'on':''}" data-tab="home"><b>🏠</b>Dépenses</button>
+      <button class="${S.tab==='bal'?'on':''}" data-tab="bal"><b>⚖️</b>Qui doit quoi</button>
+      <button class="${S.tab==='set'?'on':''}" data-tab="set"><b>⚙️</b>Groupe</button>
+    </div>
+    ${S.tab==='home' ? '<button class="fab" id="add">+</button>' : ''}`;
+  document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { S.tab=b.dataset.tab; render(); window.scrollTo(0,0); });
+  $('#add') && ($('#add').onclick = openAdd);
+  document.querySelectorAll('[data-act]').forEach(b => b.onclick = () => act(b.dataset));
+  bindSettings();
+}
+
+function notifHint(){
+  if (localStorage.getItem('notifs')) return '';
+  if (!isStandalone()) return `<div class="hint">📲 Pour recevoir les notifs : ouvre ce lien dans <b>Safari</b> → bouton <b>Partager</b> → <b>Sur l'écran d'accueil</b>, puis ouvre l'appli depuis l'icône.</div>`;
+  return `<div class="hint">🔔 Active les notifications pour être prévenu.<div class="btns"><button class="sm" data-act="notif">Activer</button></div></div>`;
+}
+
+function renderNoGroup(){
+  $('#app').innerHTML = `
+    <h1><span class="logo">Ralass</span> 💸</h1>
+    <div class="row card"><img class="av" src="${photo(S.uid)}"><div class="grow"><b>Salut ${esc(S.me.name)}</b><div class="mut">Crée ou rejoins un groupe</div></div></div>
+    <h2>Créer un groupe</h2>
+    <div class="card"><input id="gn" placeholder="Nom (ex : Les gars, Vacances Marbella…)" maxlength="30"><button id="cg">Créer</button></div>
+    <h2>Rejoindre avec un code</h2>
+    <div class="card"><input id="jc" placeholder="CODE" maxlength="6" style="text-transform:uppercase;letter-spacing:4px"><button class="sec" id="jg">Rejoindre</button></div>`;
+  $('#cg').onclick = () => { const n=$('#gn').value.trim(); if(n) { $('#cg').disabled=true; createGroup(n); } };
+  $('#jg').onclick = () => { const c=$('#jc').value.trim(); if(c.length===6) joinGroup(c); else toast('Le code fait 6 caractères'); };
+}
+
+function renderShame(){
+  return overdue().map(({e,u,s}) => `
+    <div class="card shame">
+      <img class="av xl" src="${photo(u)}">
+      <div class="t">🚨 ${esc(name(u))}</div>
+      <div class="m">« ${esc(randomMsg())} »</div>
+      <div class="mut">Doit <b style="color:var(--txt)">${eur(s.amount)}</b> à ${esc(name(e.payer))} · ${esc(e.title)}${s.status==='declared'?' · dit avoir payé':''}</div>
+    </div>`).join('');
+}
+
+function expenseCard(e){
+  const mine = e.payer===S.uid;
+  let pill='', body='', btns='';
+  if (e.status==='pending') {
+    const v=e.validations||{}; const waiting=Object.keys(v).filter(u=>v[u]==='wait');
+    pill = `<span class="pill wait">En attente de validation</span>`;
+    body = `<div class="mut" style="margin-top:8px">${Object.keys(v).map(u=>`${esc(name(u))} ${v[u]==='ok'?'✅':v[u]==='no'?'🚫':'⏳'}`).join(' · ')}</div>`;
+    if (v[S.uid]==='wait') btns = `<div class="mut" style="margin-top:10px">${esc(name(e.payer))} dit avoir payé ${eur(e.amount)}. T'étais là ?</div>
+      <div class="btns"><button class="green" data-act="val" data-id="${e.id}" data-ok="1">Valider</button><button class="sec" data-act="val" data-id="${e.id}" data-ok="">Pas moi</button></div>`;
+  } else {
+    pill = e.status==='closed' ? `<span class="pill ok">Tout remboursé</span>` : `<span class="pill">${eur(e.perPerson)} / pers.</span>`;
+    body = Object.entries(e.shares||{}).map(([u,s]) => {
+      const st = s.status==='paid'?'<span class="pill ok">Payé</span>':s.status==='declared'?'<span class="pill wait">Dit avoir payé</span>':'<span class="pill bad">Doit</span>';
+      let b='';
+      if (u===S.uid && s.status==='due') b=`<button class="sm" data-act="share" data-id="${e.id}" data-u="${u}" data-s="declared">J'ai payé</button>`;
+      if (mine && s.status!=='paid') b=`<button class="sm green" data-act="share" data-id="${e.id}" data-u="${u}" data-s="paid">Reçu</button>` + (s.status==='declared'?` <button class="sm red" data-act="share" data-id="${e.id}" data-u="${u}" data-s="due">Pas reçu</button>`:'');
+      return `<div class="row" style="margin-top:10px"><img class="av" style="width:34px;height:34px" src="${photo(u)}"><div class="grow"><b>${esc(name(u))}</b> ${st}</div>${b}</div>`;
+    }).join('');
+  }
+  return `<div class="card">
+    <div class="row"><img class="av" src="${photo(e.payer)}"><div class="grow"><b>${esc(e.title)}</b><div class="mut">${esc(name(e.payer))} a payé · ${new Date(e.date).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}</div></div><div class="big">${eur(e.amount)}</div></div>
+    <div style="margin-top:8px">${pill}</div>${body}${btns}</div>`;
+}
+
+function renderHome(){
+  const sel = S.groups.length>1 ? `<select id="gsel">${S.groups.map(g=>`<option value="${g.id}" ${g.id===S.gid?'selected':''}>${esc(g.name)}</option>`).join('')}</select>` : '';
+  return `<h1><span class="logo">${esc(S.group.name)}</span></h1>${sel}${notifHint()}${renderShame()}
+    ${S.expenses.length ? S.expenses.map(expenseCard).join('') : `<div class="card mut" style="text-align:center">Aucune dépense. Appuie sur <b>+</b> quand t'avances de l'argent.</div>`}`;
+}
+
+function renderBalances(){
+  const b = balances();
+  const mine = b.filter(x=>x.from===S.uid||x.to===S.uid);
+  const rowB = x => `<div class="card row"><img class="av" src="${photo(x.from)}"><div class="grow"><b>${esc(name(x.from))}</b> doit à <b>${esc(name(x.to))}</b></div><div class="big" style="color:var(--red)">${eur(x.v)}</div></div>`;
+  return `<h1>Qui doit quoi</h1>
+    <h2>Toi</h2>${mine.length?mine.map(rowB).join(''):'<div class="card mut">T\'es clean ✨</div>'}
+    <h2>Tout le groupe</h2>${b.length?b.map(rowB).join(''):'<div class="card mut">Personne doit rien 🙌</div>'}`;
+}
+
+function renderSettings(){
+  const g=S.group, msgs=g.messages||[];
+  return `<h1>Groupe</h1>
+    <div class="card" style="text-align:center"><div class="mut">Code d'invitation</div><div class="code">${g.code}</div>
+      <div class="btns"><button class="sec" id="share">Partager le code</button></div></div>
+    <h2>Membres</h2>
+    ${(g.members||[]).map(u=>`<div class="card row"><img class="av" src="${photo(u)}"><b class="grow">${esc(name(u))}${u===S.uid?' (toi)':''}</b></div>`).join('')}
+    <h2>Délai avant « mauvais payeur »</h2>
+    <select id="delay">${DELAYS.map(([v,l])=>`<option value="${v}" ${v===g.delayMinutes?'selected':''}>${l}</option>`).join('')}</select>
+    <h2>Messages de la honte</h2>
+    <p class="mut">Un message est tiré au hasard quand quelqu'un est en retard.</p>
+    ${msgs.map((m,i)=>`<div class="card row" style="padding:10px 14px"><div class="grow">${esc(m)}</div><button class="del" data-act="delmsg" data-i="${i}">✕</button></div>`).join('')}
+    <div class="card"><input id="nmsg" placeholder="Nouveau message…" maxlength="120"><button class="sec" id="addmsg">Ajouter</button></div>
+    <h2>Mon profil</h2>
+    <div class="card"><div class="row"><img class="av" src="${photo(S.uid)}"><b class="grow">${esc(S.me.name)}</b><label class="pill" style="padding:8px 12px">Changer la photo<input type="file" accept="image/*" id="np" hidden></label></div>
+      <div class="btns"><button class="sec" data-act="notif">🔔 ${localStorage.getItem('notifs')?'Réactiver':'Activer'} les notifications</button></div></div>
+    <h2>Autres groupes</h2>
+    <div class="card"><input id="gn" placeholder="Nouveau groupe" maxlength="30"><button class="sec" id="cg">Créer</button>
+      <input id="jc" placeholder="CODE pour rejoindre" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;margin-top:14px"><button class="sec" id="jg">Rejoindre</button></div>`;
+}
+
+function bindSettings(){
+  $('#gsel') && ($('#gsel').onchange = e => openGroup(e.target.value));
+  if (S.tab!=='set') return;
+  $('#share').onclick = () => { const t=`Rejoins mon groupe « ${S.group.name} » sur Ralass 💸\nCode : ${S.group.code}\n${location.origin+location.pathname}`;
+    navigator.share ? navigator.share({text:t}).catch(()=>{}) : (navigator.clipboard.writeText(t), toast('Copié')); };
+  $('#delay').onchange = e => updateDoc(doc(db,'groups',S.gid), { delayMinutes:+e.target.value });
+  $('#addmsg').onclick = () => { const m=$('#nmsg').value.trim(); if(m) updateDoc(doc(db,'groups',S.gid), { messages:[...(S.group.messages||[]), m] }); };
+  $('#np').onchange = async e => { const f=e.target.files[0]; if(f) updateDoc(doc(db,'users',S.uid), { photo: await resizePhoto(f) }); };
+  $('#cg').onclick = () => { const n=$('#gn').value.trim(); if(n) createGroup(n).then(()=>{ S.tab='home'; }); };
+  $('#jg').onclick = () => { const c=$('#jc').value.trim(); if(c.length===6) joinGroup(c).then(()=>{ S.tab='home'; }); };
+}
+
+function act(d){
+  const e = S.expenses.find(x=>x.id===d.id);
+  if (d.act==='val') validate(e, !!d.ok);
+  if (d.act==='share') setShare(e, d.u, d.s);
+  if (d.act==='notif') enableNotifs();
+  if (d.act==='delmsg') { const m=[...S.group.messages]; m.splice(+d.i,1); updateDoc(doc(db,'groups',S.gid), { messages:m }); }
+}
+
+// ---------- ADD EXPENSE ----------
+function openAdd(){
+  const today = new Date().toISOString().slice(0,10);
+  const m = document.createElement('div'); m.className='modal';
+  m.innerHTML = `<div class="sheet">
+    <h2 style="margin-top:0">J'ai payé 💳</h2>
+    <input id="et" placeholder="Pour quoi ? (Soirée chez Yanis…)" maxlength="40">
+    <input id="ea" type="number" inputmode="decimal" placeholder="Montant (€)">
+    <input id="ed" type="date" value="${today}">
+    <div class="mut" style="margin:6px 0 8px">Qui était présent ?</div>
+    ${(S.group.members||[]).map(u=>`<label class="chk"><input type="checkbox" value="${u}" checked><img class="av" style="width:34px;height:34px" src="${photo(u)}"><b>${esc(name(u))}${u===S.uid?' (toi)':''}</b></label>`).join('')}
+    <div class="btns"><button class="sec" id="ec">Annuler</button><button id="es">Envoyer</button></div></div>`;
+  document.body.appendChild(m);
+  m.onclick = ev => { if (ev.target===m) m.remove(); };
+  $('#ec').onclick = () => m.remove();
+  $('#es').onclick = async () => {
+    const title=$('#et').value.trim(), amount=parseFloat(String($('#ea').value).replace(',','.'));
+    const present=[...m.querySelectorAll('.chk input:checked')].map(i=>i.value);
+    if (!title) return toast('Mets un titre'); if (!(amount>0)) return toast('Montant invalide');
+    if (!present.some(u=>u!==S.uid)) return toast('Coche au moins un pote');
+    const validations={}; present.forEach(u=>validations[u]= u===S.uid?'ok':'wait');
+    $('#es').disabled=true;
+    const ex = { groupId:S.gid, title, amount, date:$('#ed').value, payer:S.uid, validations, status:'pending', createdAt:Date.now() };
+    await addDoc(collection(db,'expenses'), ex);
+    queue(present, `💳 ${S.me.name} a payé ${eur(amount)}`, `${title} — t'étais là ? Valide dans l'appli`);
+    m.remove();
+  };
+}
+</script>
+</body>
+</html>
