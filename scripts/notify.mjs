@@ -1,11 +1,12 @@
 // Robot Ralass : envoie les notifs en attente + relances "mauvais payeur"
 import admin from 'firebase-admin';
 import { GoogleAuth } from 'google-auth-library';
+import { Firestore, FieldValue } from '@google-cloud/firestore';
 // Connexion sans clé : identifiants temporaires fournis par GitHub (Workload Identity)
 const ga = new GoogleAuth({ scopes: ['https://www.googleapis.com/auth/cloud-platform'] });
 const credential = { getAccessToken: async () => { const t = await (await ga.getClient()).getAccessToken(); return { access_token: t.token, expires_in: 3000 }; } };
 admin.initializeApp({ credential, projectId: 'ralass' });
-const db = admin.firestore();
+const db = new Firestore({ projectId: 'ralass' });
 const APP_URL = process.env.APP_URL || '';
 const now = Date.now();
 const users = {};
@@ -23,7 +24,7 @@ async function send(uids, title, body) {
   res.responses.forEach((r, i) => {
     const code = r.error?.code || '';
     if (code.includes('registration-token-not-registered') || code.includes('invalid-registration-token') || code.includes('invalid-argument'))
-      db.doc(`users/${pairs[i][0]}`).update({ tokens: admin.firestore.FieldValue.arrayRemove(pairs[i][1]) });
+      db.doc(`users/${pairs[i][0]}`).update({ tokens: FieldValue.arrayRemove(pairs[i][1]) });
   });
   console.log(`→ ${title} | ${res.successCount}/${pairs.length} envoyées`);
 }

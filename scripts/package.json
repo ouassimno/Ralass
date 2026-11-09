@@ -1,1 +1,1 @@
-{ "name": "ralass-notify", "private": true, "type": "module", "dependencies": { "firebase-admin": "^12.7.0", "google-auth-library": "^9.15.0" } }
+{ "name": "ralass-notify", "private": true, "type": "module", "dependencies": { "firebase-admin": "^12.7.0", "google-auth-library": "^9.15.0", "@google-cloud/firestore": "^7.11.0" } }
