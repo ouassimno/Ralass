@@ -320,18 +320,18 @@ function renderBalances(){
 }
 
 function renderSettings(){
-  const g=S.group, msgs=g.messages||[];
+  const g=S.group, msgs=g.messages||[], admin = g.createdBy===S.uid;
   return `<h1>Groupe</h1>
     <div class="card" style="text-align:center"><div class="mut">Code d'invitation</div><div class="code">${g.code}</div>
       <div class="btns"><button class="sec" id="share">Partager le code</button></div></div>
     <h2>Membres</h2>
-    ${(g.members||[]).map(u=>`<div class="card row"><img class="av" src="${photo(u)}"><b class="grow">${esc(name(u))}${u===S.uid?' (toi)':''}</b></div>`).join('')}
-    <h2>Délai avant « mauvais payeur »</h2>
+    ${(g.members||[]).map(u=>`<div class="card row"><img class="av" src="${photo(u)}"><b class="grow">${esc(name(u))}${u===S.uid?' (toi)':''}${u===g.createdBy?' 👑':''}</b></div>`).join('')}
+    ${admin ? `<h2>Délai avant « mauvais payeur »</h2>
     <select id="delay">${DELAYS.map(([v,l])=>`<option value="${v}" ${v===g.delayMinutes?'selected':''}>${l}</option>`).join('')}</select>
     <h2>Messages de la honte</h2>
     <p class="mut">Un message est tiré au hasard quand quelqu'un est en retard.</p>
     ${msgs.map((m,i)=>`<div class="card row" style="padding:10px 14px"><div class="grow">${esc(m)}</div><button class="del" data-act="delmsg" data-i="${i}">✕</button></div>`).join('')}
-    <div class="card"><input id="nmsg" placeholder="Nouveau message…" maxlength="120"><button class="sec" id="addmsg">Ajouter</button></div>
+    <div class="card"><input id="nmsg" placeholder="Nouveau message…" maxlength="120"><button class="sec" id="addmsg">Ajouter</button></div>` : `<div class="card mut">🔒 Seul ${esc(name(g.createdBy))} peut changer le délai et les messages.</div>`}
     <h2>Mon profil</h2>
     <div class="card"><div class="row"><img class="av" src="${photo(S.uid)}"><b class="grow">${esc(S.me.name)}</b><label class="pill" style="padding:8px 12px">Changer la photo<input type="file" accept="image/*" id="np" hidden></label></div>
       <div class="btns"><button class="sec" data-act="notif">🔔 ${localStorage.getItem('notifs')?'Réactiver':'Activer'} les notifications</button></div></div>
@@ -343,13 +343,15 @@ function renderSettings(){
 function bindSettings(){
   $('#gsel') && ($('#gsel').onchange = e => openGroup(e.target.value));
   if (S.tab!=='set') return;
-  $('#share').onclick = () => { const t=`Rejoins mon groupe « ${S.group.name} » sur Ralass 💸\nCode : ${S.group.code}\n${location.origin+location.pathname}`;
+  $('#share').onclick = () => { const t=`Rejoins mon groupe « ${S.group.name} » sur Ralass 💸\n\n1. Ouvre ce lien dans Safari : ${location.origin+location.pathname}\n2. Bouton Partager → « Sur l'écran d'accueil »\n3. Ouvre Ralass depuis l'icône, mets ta photo\n4. Tape le code : ${S.group.code}`;
     navigator.share ? navigator.share({text:t}).catch(()=>{}) : (navigator.clipboard.writeText(t), toast('Copié')); };
-  $('#delay').onchange = e => updateDoc(doc(db,'groups',S.gid), { delayMinutes:+e.target.value });
-  $('#addmsg').onclick = () => { const m=$('#nmsg').value.trim(); if(m) updateDoc(doc(db,'groups',S.gid), { messages:[...(S.group.messages||[]), m] }); };
   $('#np').onchange = async e => { const f=e.target.files[0]; if(f) updateDoc(doc(db,'users',S.uid), { photo: await resizePhoto(f) }); };
   $('#cg').onclick = () => { const n=$('#gn').value.trim(); if(n) createGroup(n).then(()=>{ S.tab='home'; }); };
   $('#jg').onclick = () => { const c=$('#jc').value.trim(); if(c.length===6) joinGroup(c).then(()=>{ S.tab='home'; }); };
+  if (S.group.createdBy!==S.uid) return;
+  $('#delay').onchange = e => updateDoc(doc(db,'groups',S.gid), { delayMinutes:+e.target.value });
+  $('#addmsg').onclick = () => { const m=$('#nmsg').value.trim(); if(m) updateDoc(doc(db,'groups',S.gid), { messages:[...(S.group.messages||[]), m] }); };
+
 }
 
 function act(d){
@@ -357,7 +359,7 @@ function act(d){
   if (d.act==='val') validate(e, !!d.ok);
   if (d.act==='share') setShare(e, d.u, d.s);
   if (d.act==='notif') enableNotifs();
-  if (d.act==='delmsg') { const m=[...S.group.messages]; m.splice(+d.i,1); updateDoc(doc(db,'groups',S.gid), { messages:m }); }
+  if (d.act==='delmsg' && S.group.createdBy===S.uid) { const m=[...S.group.messages]; m.splice(+d.i,1); updateDoc(doc(db,'groups',S.gid), { messages:m }); }
 }
 
 // ---------- ADD EXPENSE ----------
