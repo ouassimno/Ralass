@@ -153,6 +153,7 @@ function openGroup(gid){
   S.unsub.push(onSnapshot(doc(db,'groups',gid), s => { S.group = {id:s.id,...s.data()}; watchUsers(S.group.members||[]); render(); }));
   S.unsub.push(onSnapshot(query(collection(db,'expenses'), where('groupId','==',gid)), qs => {
     S.expenses = qs.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.createdAt-a.createdAt); render();
+    S.expenses.filter(e=>e.status==='pending' && e.payer===S.uid).forEach(activateLegacy);
   }));
 }
 function watchUsers(uids){
@@ -174,6 +175,18 @@ async function joinGroup(code){
   S.gid = g.id; localStorage.setItem('gid',g.id);
   await updateDoc(doc(db,'users',S.uid), { groups: arrayUnion(g.id) });
   queue(g.data().members, `👋 ${S.me.name} a rejoint ${g.data().name}`, 'Bienvenue dans le groupe');
+}
+
+
+// anciennes dépenses "à valider" : on les active directement
+const legacyDone=new Set();
+function activateLegacy(e){
+  if (legacyDone.has(e.id)) return; legacyDone.add(e.id);
+  const present = Object.keys(e.validations||{}).filter(u=>e.validations[u]!=='no');
+  const part = e.amount / present.length, shares = {};
+  present.filter(u=>u!==e.payer).forEach(u=>shares[u]={amount:part,status:'due'});
+  updateDoc(doc(db,'expenses',e.id), { status: Object.keys(shares).length?'active':'closed', shares, perPerson:part, participants:present, activatedAt:Date.now() });
+  Object.keys(shares).forEach(u => queue([u], `💸 Tu dois ${eur(part)} à ${name(e.payer)}`, `${e.title} — rembourse avant que tout le groupe voie ta tête 👀`));
 }
 
 // ---------- DEBT LOGIC ----------
@@ -382,11 +395,12 @@ function openAdd(){
     const present=[...m.querySelectorAll('.chk input:checked')].map(i=>i.value);
     if (!title) return toast('Mets un titre'); if (!(amount>0)) return toast('Montant invalide');
     if (!present.some(u=>u!==S.uid)) return toast('Coche au moins un pote');
-    const validations={}; present.forEach(u=>validations[u]= u===S.uid?'ok':'wait');
     $('#es').disabled=true;
-    const ex = { groupId:S.gid, title, amount, date:$('#ed').value, payer:S.uid, validations, status:'pending', createdAt:Date.now() };
+    const part = amount / present.length, shares = {};
+    present.filter(u=>u!==S.uid).forEach(u=>shares[u]={amount:part,status:'due'});
+    const ex = { groupId:S.gid, title, amount, date:$('#ed').value, payer:S.uid, participants:present, shares, perPerson:part, status:'active', activatedAt:Date.now(), createdAt:Date.now() };
     await addDoc(collection(db,'expenses'), ex);
-    queue(present, `💳 ${S.me.name} a payé ${eur(amount)}`, `${title} — t'étais là ? Valide dans l'appli`);
+    Object.keys(shares).forEach(u => queue([u], `💸 Tu dois ${eur(part)} à ${S.me.name}`, `${title} — ${S.me.name} a payé ${eur(amount)}. Rembourse avant que tout le groupe voie ta tête 👀`));
     m.remove();
   };
 }
